@@ -13,15 +13,33 @@ import (
 //   eg. foo[varbar] where varbar must be a existing variable in the vartable
 // Adding a new field to an existing map is possible
 func (v *VT) AddPath(path string, value interface{}) error {
-	newVar, err := unflattenPath(path, value)
+	var err error
+	fields, err := splitFields(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse path: %s\n%w", path, err)
 	}
-	if err := mergo.Merge(&v.vars, &newVar); err != nil {
-		golog.Fatal(err)
+	interFields := make([]interface{}, len(fields))
+	interFields[0] = fields[0]
+	// Resolve fields except for the first field
+	// which is the name of the variable
+	for i, field := range fields[1:] {
+		interFields[i+1], err = v.Eval(field)
+		if err != nil {
+			return fmt.Errorf("incorrect variable path: %s\n%w", path, err)
+		}
 	}
-
-	fmt.Println(newVar)
-	// TODO
-	return nil
+	newVar := unflattenPath(interFields, value)
+	v.Lock()
+	defer v.Unlock()
+	// recover mergo Merge panic
+	defer recover()
+	defer func() {
+		if recover() != nil {
+			err = fmt.Errorf("cannot add to variable: %s\n%w", path, err)
+		}
+	}()
+	if err := mergo.Merge(&v.vars, &newVar, mergo.WithOverride); err != nil {
+		return fmt.Errorf("cannot add to variable: %s\n%w", path, err)
+	}
+	return err
 }

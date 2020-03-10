@@ -2,22 +2,24 @@ package vartable
 
 import "fmt"
 
-func unflattenPath(path string, value interface{}) (map[string]interface{}, error) {
-	fields, err := splitFields(path)
-	if err != nil {
-		return nil, err
+func unflattenPath(fields []interface{}, value interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	if len(fields) > 1 {
+		res[fields[0].(string)] = unflattenNestedMap(fields[1:], value)
+	} else {
+		res[fields[0].(string)] = value
 	}
-	res := createUnflatMap(fields, value)
-	return res, nil
+
+	return res
 }
 
-func createUnflatMap(fields []string, value interface{}) map[string]interface{} {
-	res := make(map[string]interface{})
+func unflattenNestedMap(fields []interface{}, value interface{}) map[interface{}]interface{} {
+	res := make(map[interface{}]interface{})
 	if len(fields) == 1 {
 		res[fields[0]] = value
 		return res
 	}
-	res[fields[0]] = createUnflatMap(fields[1:], value)
+	res[fields[0]] = unflattenNestedMap(fields[1:], value)
 	return res
 }
 

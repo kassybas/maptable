@@ -112,8 +112,8 @@ func Test_splitFields(t *testing.T) {
 
 func Test_unflattenPath(t *testing.T) {
 	type args struct {
-		path  string
-		value interface{}
+		fields []interface{}
+		value  interface{}
 	}
 	tests := []struct {
 		name    string
@@ -124,11 +124,11 @@ func Test_unflattenPath(t *testing.T) {
 		{
 			"test1",
 			args{
-				"hello.tourist",
+				[]interface{}{"hello", "tourist"},
 				"okay",
 			},
 			map[string]interface{}{
-				"hello": map[string]interface{}{
+				"hello": map[interface{}]interface{}{
 					"tourist": "okay",
 				},
 			},
@@ -137,12 +137,12 @@ func Test_unflattenPath(t *testing.T) {
 		{
 			"test2",
 			args{
-				"hello.tourist[dubist]",
+				[]interface{}{"hello", "tourist", "dubist"},
 				"okay",
 			},
 			map[string]interface{}{
-				"hello": map[string]interface{}{
-					"tourist": map[string]interface{}{
+				"hello": map[interface{}]interface{}{
+					"tourist": map[interface{}]interface{}{
 						"dubist": "okay",
 					},
 				},
@@ -152,12 +152,12 @@ func Test_unflattenPath(t *testing.T) {
 		{
 			"test2",
 			args{
-				"hello.tourist[dubist.in.bp]",
+				[]interface{}{"hello", "tourist", "dubist.in.bp"},
 				"okay",
 			},
 			map[string]interface{}{
-				"hello": map[string]interface{}{
-					"tourist": map[string]interface{}{
+				"hello": map[interface{}]interface{}{
+					"tourist": map[interface{}]interface{}{
 						"dubist.in.bp": "okay",
 					},
 				},
@@ -167,11 +167,7 @@ func Test_unflattenPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := unflattenPath(tt.args.path, tt.args.value)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("unflattenPath() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := unflattenPath(tt.args.fields, tt.args.value)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("unflattenPath() = %v, want %v", got, tt.want)
 			}
