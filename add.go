@@ -41,9 +41,9 @@ func (v *VT) AddPath(path string, value interface{}) error {
 	return err
 }
 
-func (v *VT) AddMultiplePath(paths []string, values []interface{}, allowLessPath true) error {
+func (v *VT) AddMultiplePath(paths []string, values []interface{}, allowLessPath bool) error {
 	if (!allowLessPath && len(paths) < len(values)) || len(values) > len(paths) {
-		return fmt.Errorf("not matching names and values: %d (%s) != %d (%s)", len(values), values, len(names), names)
+		return fmt.Errorf("not matching names and values: %d (%s) != %d (%s)", len(values), values, len(paths), paths)
 	}
 	for i := range paths {
 		err := v.AddPath(paths[i], values[i])
