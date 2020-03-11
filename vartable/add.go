@@ -2,8 +2,6 @@ package vartable
 
 import (
 	"fmt"
-
-	"github.com/imdario/mergo"
 )
 
 // AddPath adds a new value to the vartable based on dot/bracket notation
@@ -18,28 +16,71 @@ func (v *VT) AddPath(path string, value interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse path: %s\n%w", path, err)
 	}
-	interFields := make([]interface{}, len(fields))
-	interFields[0] = fields[0]
 	// Resolve fields except for the first field
 	// which is the name of the variable
+	fieldsInter := make([]interface{}, len(fields))
+	fieldsInter[0] = fields[0]
 	for i, field := range fields[1:] {
-		interFields[i+1], err = v.Eval(field)
+		fieldsInter[i+1], err = v.Eval(field)
 		if err != nil {
 			return fmt.Errorf("incorrect variable path: %s\n%w", path, err)
 		}
 	}
-	newVar := unflattenPath(interFields, value)
+	v.RLock()
+	_, exists := v.vars[fields[0]]
+	v.RUnlock()
+	if !exists {
+		return fmt.Errorf("refered variable does not exist: %s (in path: %s)", fields[0], path)
+	}
 	v.Lock()
-	defer v.Unlock()
-	// recover mergo Merge panic
-	defer recover()
-	defer func() {
-		if recover() != nil {
-			err = fmt.Errorf("cannot add to variable: %s\n%w", path, err)
-		}
-	}()
-	if err := mergo.Merge(&v.vars, &newVar, mergo.WithOverride); err != nil {
-		return fmt.Errorf("cannot add to variable: %s\n%w", path, err)
+	v.vars[fields[0]], err = setValueByFields(fieldsInter[1:], value, v.vars[fields[0]])
+	v.Unlock()
+	if err != nil {
+		return err
 	}
 	return err
+}
+
+func setValueByFields(fieldsInter []interface{}, value interface{}, curVar interface{}) (interface{}, error) {
+	if len(fieldsInter) == 0 {
+		return value, nil
+	}
+	field := fieldsInter[0]
+	var err error
+	var exists bool
+	switch curVar.(type) {
+	case map[interface{}]interface{}:
+		{
+			_, exists = curVar.(map[interface{}]interface{})[field]
+			if !exists {
+				return nil, fmt.Errorf("field does not exist: %s", field)
+			}
+			curVar.(map[interface{}]interface{})[field], err =
+				setValueByFields(
+					fieldsInter[1:],
+					value,
+					curVar.(map[interface{}]interface{})[field],
+				)
+			return curVar, err
+
+		}
+	case []interface{}:
+		{
+			index, ok := field.(int)
+			if !ok {
+				return nil, fmt.Errorf("non-integer index on list: %s", field)
+			}
+			if index >= len(curVar.([]interface{})) {
+				return nil, fmt.Errorf("index out of range: %d", index)
+			}
+			curVar.([]interface{})[index], err = setValueByFields(
+				fieldsInter[1:],
+				value,
+				curVar.([]interface{})[index],
+			)
+			return curVar, err
+		}
+	default:
+		return nil, fmt.Errorf("indexing or reference on scalar value: %T[%s]", curVar, field)
+	}
 }

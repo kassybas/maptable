@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func test_AddPath_Helper(original map[string]interface{}, path string, value interface{}) (map[string]interface{}, error) {
+func testAddPathHelper(original map[string]interface{}, path string, value interface{}) (map[string]interface{}, error) {
 	vt := New()
 	vt.vars = original
 	err := vt.AddPath(path, value)
@@ -56,17 +56,8 @@ func Test_test_AddPath_Helper(t *testing.T) {
 				path:  "hello.user.name.yolo",
 				value: "new",
 			},
-			want: map[string]interface{}{
-				"foo": "bar",
-				"hello": map[interface{}]interface{}{
-					"user": map[interface{}]interface{}{
-						"name": map[interface{}]interface{}{
-							"yolo": "new",
-						},
-					},
-				},
-			},
-			wantErr: false,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "test3",
@@ -112,10 +103,80 @@ func Test_test_AddPath_Helper(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "test5",
+			args: args{
+				original: map[string]interface{}{
+					"hello": map[interface{}]interface{}{
+						"user": map[interface{}]interface{}{
+							"name": 12,
+						},
+					},
+				},
+				path:  "hello",
+				value: "bar",
+			},
+			want: map[string]interface{}{
+				"hello": "bar",
+			},
+			wantErr: false,
+		},
+		{
+			name: "test6",
+			args: args{
+				original: map[string]interface{}{
+					"$goodbye": "john",
+					"$hello": map[interface{}]interface{}{
+						"john": map[interface{}]interface{}{
+							"age": 12,
+						},
+					},
+				},
+				path:  "$hello[$goodbye]age",
+				value: 66,
+			},
+			want: map[string]interface{}{
+				"$goodbye": "john",
+				"$hello": map[interface{}]interface{}{
+					"john": map[interface{}]interface{}{
+						"age": 66,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "test7",
+			args: args{
+				original: map[string]interface{}{
+					"$goodbye": "john",
+					"$hello": map[interface{}]interface{}{
+						"john": map[interface{}]interface{}{
+							"children": []interface{}{
+								"alice", "bob", "cecil",
+							},
+						},
+					},
+				},
+				path:  "$hello[$goodbye]children[0]",
+				value: "YOLO",
+			},
+			want: map[string]interface{}{
+				"$goodbye": "john",
+				"$hello": map[interface{}]interface{}{
+					"john": map[interface{}]interface{}{
+						"children": []interface{}{
+							"YOLO", "bob", "cecil",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := test_AddPath_Helper(tt.args.original, tt.args.path, tt.args.value)
+			got, err := testAddPathHelper(tt.args.original, tt.args.path, tt.args.value)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("test_AddPath_Helper() error = %v, wantErr %v", err, tt.wantErr)
 				return
