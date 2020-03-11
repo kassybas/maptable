@@ -41,6 +41,19 @@ func (v *VT) AddPath(path string, value interface{}) error {
 	return err
 }
 
+func (v *VT) AddMultiplePath(paths []string, values []interface{}, allowLessPath true) error {
+	if (!allowLessPath && len(paths) < len(values)) || len(values) > len(paths) {
+		return fmt.Errorf("not matching names and values: %d (%s) != %d (%s)", len(values), values, len(names), names)
+	}
+	for i := range paths {
+		err := v.AddPath(paths[i], values[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func setValueByFields(fieldsInter []interface{}, value interface{}, curVar interface{}) (interface{}, error) {
 	if len(fieldsInter) == 0 {
 		return value, nil
