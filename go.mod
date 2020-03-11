@@ -1,4 +1,4 @@
-module github.com/kassybas/vartable
+module github.com/kassybas/maptable
 
 go 1.13
 

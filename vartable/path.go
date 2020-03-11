@@ -1,4 +1,4 @@
-package vartable
+package maptable
 
 import "fmt"
 

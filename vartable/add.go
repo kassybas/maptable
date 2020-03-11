@@ -1,14 +1,14 @@
-package vartable
+package maptable
 
 import (
 	"fmt"
 )
 
-// AddPath adds a new value to the vartable based on dot/bracket notation
+// AddPath adds a new value to the maptable based on dot/bracket notation
 // accepted path fields can be separated by . or []
 //   eg. foo.bar or foo["bar"]
 // if variable field is used, only the [] notation is accepted with unqoted field
-//   eg. foo[varbar] where varbar must be a existing variable in the vartable
+//   eg. foo[varbar] where varbar must be a existing variable in the maptable
 // Adding a new field to an existing map is possible
 func (v *VT) AddPath(path string, value interface{}) error {
 	var err error

@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/kassybas/vartable/vartable"
+	"github.com/kassybas/maptable/maptable"
 	"github.com/kataras/golog"
 )
 
 func main() {
-	vt := vartable.New()
+	vt := maptable.New()
 	orig := map[interface{}]interface{}{
 		"user": map[interface{}]interface{}{
 			"name": "john",

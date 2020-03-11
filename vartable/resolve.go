@@ -1,4 +1,4 @@
-package vartable
+package maptable
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/antonmedv/expr"
 )
 
-// Eval evaluates the given expression using the variable stored in the vartable
+// Eval evaluates the given expression using the variable stored in the maptable
 func (v *VT) eval(exp string, parseNumber bool) (interface{}, error) {
 	v.RLock()
 	defer v.RUnlock()
