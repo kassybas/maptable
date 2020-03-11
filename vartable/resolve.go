@@ -9,7 +9,7 @@ import (
 )
 
 // Eval evaluates the given expression using the variable stored in the vartable
-func (v *VT) Eval(exp string) (interface{}, error) {
+func (v *VT) eval(exp string, parseNumber bool) (interface{}, error) {
 	v.RLock()
 	defer v.RUnlock()
 	if strings.HasPrefix(exp, "$") {
@@ -19,8 +19,20 @@ func (v *VT) Eval(exp string) (interface{}, error) {
 		}
 		return output, nil
 	}
-	if i, err := strconv.Atoi(exp); err == nil {
-		return i, nil
+	if parseNumber {
+		if i, err := strconv.Atoi(exp); err == nil {
+			return i, nil
+		}
 	}
 	return exp, nil
+}
+
+// Resolve resolves the given expression
+func (v *VT) Resolve(value interface{}) (interface{}, error) {
+	switch value := value.(type) {
+	case string:
+		return v.eval(value, false)
+	default:
+		return value, nil
+	}
 }

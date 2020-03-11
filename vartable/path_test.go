@@ -34,9 +34,9 @@ func Test_splitFields(t *testing.T) {
 		{
 			"test2",
 			args{
-				"hello[tourist]",
+				`hello["tourist"]`,
 			},
-			[]string{"hello", "tourist"},
+			[]string{"hello", `"tourist"`},
 			false,
 		},
 		{

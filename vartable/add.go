@@ -21,7 +21,7 @@ func (v *VT) AddPath(path string, value interface{}) error {
 	fieldsInter := make([]interface{}, len(fields))
 	fieldsInter[0] = fields[0]
 	for i, field := range fields[1:] {
-		fieldsInter[i+1], err = v.Eval(field)
+		fieldsInter[i+1], err = v.eval(field, true)
 		if err != nil {
 			return fmt.Errorf("incorrect variable path: %s\n%w", path, err)
 		}
