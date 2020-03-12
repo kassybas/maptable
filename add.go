@@ -12,9 +12,19 @@ import (
 // Adding a new field to an existing map is possible
 func (v *VT) AddPath(path string, value interface{}) error {
 	var err error
+	value, err = v.Resolve(value)
+	if err != nil {
+		return fmt.Errorf("failed to evaluate value: %v\n%w", value, err)
+	}
 	fields, err := splitFields(path)
 	if err != nil {
 		return fmt.Errorf("failed to parse path: %s\n%w", path, err)
+	}
+	if len(fields) == 1 {
+		v.Lock()
+		v.vars[fields[0]] = value
+		v.Unlock()
+		return nil
 	}
 	// Resolve fields except for the first field
 	// which is the name of the variable
@@ -26,6 +36,7 @@ func (v *VT) AddPath(path string, value interface{}) error {
 			return fmt.Errorf("incorrect variable path: %s\n%w", path, err)
 		}
 	}
+
 	v.RLock()
 	_, exists := v.vars[fields[0]]
 	v.RUnlock()

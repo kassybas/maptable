@@ -33,6 +33,7 @@ func (v *VT) Resolve(value interface{}) (interface{}, error) {
 	case string:
 		return v.eval(value, false)
 	default:
+		// TODO: deep eval maps and slices
 		return value, nil
 	}
 }
