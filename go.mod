@@ -9,7 +9,7 @@ require (
 	github.com/antonmedv/expr v1.6.0
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
-	github.com/kataras/golog v0.0.10
+	github.com/kataras/golog v0.0.10 // indirect
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/peterbourgon/mergemap v0.0.0-20130613134717-e21c03b7a721 // indirect
